@@ -112,30 +112,74 @@ const calcDisplayBalance = function (movements){
 
 }
 
-calcDisplayBalance(account1.movements);
 
-const calcDisplaySummary = function (movements){
-  const incomes = movements 
+
+const calcDisplaySummary = function (acc){
+  const incomes = acc.movements 
   .filter(mov => mov > 0)
   .reduce((acc,mov) =>acc + mov, 0);
   labelSumIn.textContent = `${incomes} BDT`;
 
-  const outcomes = movements 
+  const outcomes = acc.movements 
   .filter(mov => mov < 0)
   .reduce((acc,mov) =>acc + mov, 0);
   labelSumOut.textContent = `${outcomes} BDT`;//Math.abs(outcomes)
 
   //1.2% of deposit
-  const interest = movements
+  const interest = acc.movements
   .filter(mov => mov > 0)
-  .map(deposit => (deposit * 1.2)/100)
+  .map(deposit => (deposit * acc.interestRate) / 100)
   .reduce((acc, inter) => acc + inter, 0);
   labelSumInterest.textContent = `${parseFloat(interest).toFixed(2)} BDT`
 }
 
-calcDisplaySummary(account1.movements);
+calcDisplaySummary(account3.movements);
 
+let currentAccount;
+btnLogin.addEventListener('click', function(e){
+  //prevent form from permitting
+  e.preventDefault();
+  currentAccount = accounts.find(acc => acc.username ===
+    inputLoginUsername.value);
+    console.log(currentAccount)
 
+    if(currentAccount?.pin == Number(inputLoginPin.value)){
+      console.log('LOGIN OK');
+      
+      //display UI and welcome message
+      labelWelcome.textContent = `Welcome back,
+      ${currentAccount.owner.split(' ')[0]}`
+      containerApp.style.opacity = 100
+
+      //display movements
+      calcDisplayMovements(currentAccount.movements);
+      
+      //display summary
+      calcDisplaySummary(currentAccount);
+
+      //display balance
+      calcDisplayBalance(curentAccount.movements);
+    
+      //clear input fields
+      inputLoginUsername.value = ''
+      inputLoginPin.vlaue = ''
+    }
+})
+
+btnTransfer.addEventListener('click', function(e){
+e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const recieverAcc = accounts.find(
+  acc => acc.username === inputTransferTo.value
+  );
+  console.log(amount, recieverAcc)
+  if(amount > 0 &&
+    currentAccount.balance >= amount
+  ){
+    
+  }
+
+});
 
 
 //const deposits = movements.filter(function (mov)){
