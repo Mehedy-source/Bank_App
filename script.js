@@ -66,136 +66,189 @@ const inputClosePin = document.querySelector('.form__input--pin');
 
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
-const displayMovements = function (movements) {
-  //delete previous movements before we query next ones
+const displayMovements = function(movements){
+  // delete previous movements before we query next ones
   containerMovements.innerHTML = '';
 
-  movements.forEach(function (mov, i) { //mov is movement 
-    const type = mov > 0 ? 'deposit' : 'withdrawal';
+  movements.forEach(function(mov, i){ // mov is movement
+      const type = mov > 0 ? 'deposit':'withdrawal'; 
 
-    const html = `
-
-<div class="movements__row">
-          <div class="movements__type movements__type--${type}">${i+1}
-          ${type}</div>
-          
+      const html = `
+      <div class="movements__row">
+          <div class="movements__type movements__type--${type}">${i+1} ${type}</div>
           <div class="movements__value">${mov}</div>
-        </div> `;
+      </div>
+      `;
 
-    containerMovements.insertAdjacentHTML('afterbegin', html)
-  }) //end od foreach 
+      // insertAdjacentHTML - create a row in parent element
+      containerMovements.insertAdjacentHTML('afterbegin',html)
+    })
+    // end of forEach
 }
 
-displayMovements(account1.movements);
+const user = 'Steven Thomas Williams'; //i need stw abbrevation
 
-const user = 'Steven Thomas Williams'; //i need stw abbreviation 
 const createUserNames = function (arr_with_accounts) {
 
-  arr_with_accounts.forEach(function (one_account) {
+  arr_with_accounts.forEach(function(one_account){
 
+    // we create new field 'username'
     one_account.username = one_account.owner
-      .toLowerCase()
-      .split(' ')
-      .map(name => name[0])
-      .join(''); //join letters without any seperator
+    .toLowerCase()
+    .split(' ')
+    .map(name => name[0])
+    .join(''); //join letters without any seperator
 
-    // console.log(username)
-    // return username;
+  // console.log(username)
+  // return username;
   })
 };
 createUserNames(accounts)
 console.log(accounts);
 
-const calcDisplayBalance = function (movements){
-  const balance2 = movements.reduce ((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${balance2} BDT`
-
+const updateUI = function(acc){
+  displayMovements(acc.movements)
+  calcDisplayBalance(acc)
+  clacDisplaySummary(acc)
 }
+// const deposits = movements.filter(function(mov){
+//   return mov > 0;
+// });
+
+// modern way with arrow function
+const deposits = movements.filter(mov => mov > 0);
+const withdrawals = movements.filter(mov => mov < 0);
 
 
+console.log('--movements---')
+console.log(movements)
+console.log('------------')
+console.log(deposits)
+console.log(withdrawals)
 
-const calcDisplaySummary = function (acc){
-  const incomes = acc.movements 
+// REDUCE
+// acc - accumulator - snowball
+// cur - current, i - index
+
+// const balance = movements.reduce(function (acc,cur, i, arr){
+//   console.log(`Iteration ${i}: ${acc}`)
+//   return acc +cur;
+// }, 0)
+
+// modern way
+const balance = movements.reduce((acc,cur) => acc+cur,0);
+
+console.log(balance)
+
+const calcDisplayBalance = function(acc){
+  acc.balance = acc.movements.reduce((acc,mov) => acc+mov,0);
+
+  labelBalance.textContent = `${acc.balance} PLN`
+} 
+
+const clacDisplaySummary = function(acc){
+  const incomes = acc.movements
   .filter(mov => mov > 0)
-  .reduce((acc,mov) =>acc + mov, 0);
-  labelSumIn.textContent = `${incomes} BDT`;
+  .reduce((acc,mov) => acc+mov,0);
 
-  const outcomes = acc.movements 
+  labelSumIn.textContent = `${incomes} PLN`
+
+  const outcomes = acc.movements
   .filter(mov => mov < 0)
-  .reduce((acc,mov) =>acc + mov, 0);
-  labelSumOut.textContent = `${outcomes} BDT`;//Math.abs(outcomes)
+  .reduce((acc,mov) => acc+mov,0);
 
-  //1.2% of deposit
+  labelSumOut.textContent = `${outcomes} PLN`
+
+  // 1.2% of deposit
+  // const interest = incomes * 0.012
+
   const interest = acc.movements
   .filter(mov => mov > 0)
-  .map(deposit => (deposit * acc.interestRate) / 100)
-  .reduce((acc, inter) => acc + inter, 0);
-  labelSumInterest.textContent = `${parseFloat(interest).toFixed(2)} BDT`
+  .map(deposit => (deposit * acc.interestRate)/100)
+  .reduce((acc,inter) => acc + inter,0);
+
+  labelSumInterest.textContent = `${parseFloat(interest).toFixed(2)} PLN`
+
 }
 
-calcDisplaySummary(account3.movements);
 
-let currentAccount;
-btnLogin.addEventListener('click', function(e){
-  //prevent form from permitting
+let currentAcount;
+btnLogin.addEventListener('click',function(e){
+  // prevent form from permiting (default behavior of web browser)
   e.preventDefault();
-  currentAccount = accounts.find(acc => acc.username ===
-    inputLoginUsername.value);
-    console.log(currentAccount)
+  currentAcount = accounts.find(acc => acc.username === inputLoginUsername.value)
 
-    if(currentAccount?.pin == Number(inputLoginPin.value)){
-      console.log('LOGIN OK');
-      
-      //display UI and welcome message
-      labelWelcome.textContent = `Welcome back,
-      ${currentAccount.owner.split(' ')[0]}`
-      containerApp.style.opacity = 100
+  console.log(currentAcount)
+  // ? - checks if current account exists 
+  if(currentAcount?.pin === Number(inputLoginPin.value)){
+    console.log('LOGIN OK')
 
-      //display movements
-      calcDisplayMovements(currentAccount.movements);
-      
-      //display summary
-      calcDisplaySummary(currentAccount);
+    // display UI and welcome message
+    labelWelcome.textContent = `Welcome back ${currentAcount.owner.split(' ')[0]}`
+    containerApp.style.opacity = 100
 
-      //display balance
-      calcDisplayBalance(curentAccount.movements);
+    updateUI(currentAcount)
     
-      //clear input fields
-      inputLoginUsername.value = ''
-      inputLoginPin.vlaue = ''
-    }
+    // clear input
+    inputLoginUsername.value = ''
+    inputLoginPin.value = ''
+
+  }
 })
 
 btnTransfer.addEventListener('click', function(e){
-e.preventDefault();
+  e.preventDefault();
   const amount = Number(inputTransferAmount.value);
   const recieverAcc = accounts.find(
-  acc => acc.username === inputTransferTo.value
+    acc => acc.username === inputTransferTo.value
   );
   console.log(amount, recieverAcc)
-  if(amount > 0 &&
-    currentAccount.balance >= amount
-  ){
-    
-  }
+  inputTransferAmount.value = inputTransferTo.value = ''
 
+  if(amount > 0 && 
+    recieverAcc && //if obj exists
+    currentAcount.balance >= amount &&
+    recieverAcc.username !== currentAcount.username
+    ){
+      console.log('transfer valid')
+
+      //  doing the transfer
+      currentAcount.movements.push(-amount)
+      recieverAcc.movements.push(amount)
+      updateUI(currentAcount)
+    }
 });
 
+btnClose.addEventListener('click',function(e){
+  e.preventDefault()
+  
+  if(inputCloseUsername.value === currentAcount.username &&
+    Number(inputClosePin.value) === currentAcount.pin){
 
-//const deposits = movements.filter(function (mov)){
-//return mov >0;
-//});
-const deposits = movements.filter(mov => mov > 0);
-const withdrawals = movements.filter(mov => mov < 0);
-console.log(movements);
-console.log(deposits);
+      //1. find index
+      const index = accounts.findIndex( acc => acc.username === currentAcount.username)
+      console.log(index)
+      //2. delete account
+      accounts.splice(index,1)
+      // hide UI
+      containerApp.style.opacity = 0
+    }
+    inputClosePin.value = inputCloseUsername.value = ''
+})
 
-//REDUCE 
-//acc - accumulator - snowball 
-//cur - current  , i - index
-//const balance = movements.reduce(function (acc, cur, i, arr){
-//console.log(`Iteration ${i}: ${acc}`)
-//return acc+ cur;
-//}, 0);
-const balance = movements.reduce((acc, cur) => acc + cur, 0);
-console.log(balance);
+btnLoan.addEventListener('click', function (e){
+  e.preventDefault();
+  const amount = Number(inputLoanAmount.value);
+  if(amount > 0 &&
+    currentAcount.movements.some(mov => mov >= amount * 0.1 ))
+    {
+      currentAcount.movements.push(amount);
+      updateUI(currentAcount);
+    }
+})
+// todo - HOMEWORK
+// timer at the end
+// logging out
+
+// highlight propper date
+// date of transaction
