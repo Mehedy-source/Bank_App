@@ -252,3 +252,40 @@ btnLoan.addEventListener('click', function (e){
 
 // highlight propper date
 // date of transaction
+// btn sort from high/low one time sort (original order)
+const getDate = function(){
+  var dateObj = new Date();
+  var month = dateObj.getUTCMonth() + 1; //months from 1-12
+  var day = dateObj.getUTCDate();
+  var year = dateObj.getUTCFullYear();
+  let newdate = day + "/" + month + "/" + year;
+  console.log(newdate)
+  return newdate
+}
+labelDate.textContent = getDate()
+function startTimer() {
+  var timer = 300;
+  setInterval(function () {
+      //getting minutes and seconds
+      var minutes = parseInt(timer / 60, 10);
+      var seconds = parseInt(timer % 60, 10);
+      //adding 0 when single digit
+      minutes = minutes < 10 ? "0" + minutes : minutes;
+      seconds = seconds < 10 ? "0" + seconds : seconds;
+      labelTimer.textContent = minutes + ":" + seconds;
+      //logging out when time 0
+      if (--timer < 0) {
+          containerApp.style.opacity = 0;
+      }
+  }, 1000);
+}
+// Btn sort
+btnSort.addEventListener('click',function(e){
+  e.preventDefault()
+
+  console.log('movenents',currentAcount.movements.sort())
+  currentAcount.movements.sort()
+  currentAcount.movements.sort(function(a,b){return a - b})
+  updateUI(currentAcount)
+
+})
